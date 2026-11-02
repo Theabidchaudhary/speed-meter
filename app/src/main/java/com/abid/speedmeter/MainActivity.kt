@@ -105,7 +105,8 @@ class Ont(private val host: String, private val user: String, private val pass: 
         lastLogin = System.currentTimeMillis()
         var token = ""
         try {
-            val r = request("GET", "/asp/GetRandCount.asp", null, null)
+            // This firmware asks for the login token with a POST request
+            val r = request("POST", "/asp/GetRandCount.asp", "", null)
             if (r.code == 200) token = r.body.filter { it.isLetterOrDigit() }
         } catch (e: Exception) {
             // some firmware does not need the token
@@ -123,7 +124,8 @@ class Ont(private val host: String, private val user: String, private val pass: 
             }
         }
         cookie = null
-        return "Login failed (HTTP " + r.code + "). Check the username and password."
+        val tokenInfo = if (token.isEmpty()) " No login token was received from the ONT." else ""
+        return "Login failed (HTTP " + r.code + ")." + tokenInfo + " Check the username and password."
     }
 
     private fun get(path: String): String {
